@@ -1,0 +1,17 @@
+namespace: cloud.FIXME
+name: FIXME
+description: Roles and Playbooks for use with Ansible Cloud collections
+readme: README.md
+version: 0.0.1
+authors:
+  - Ansible (https://github.com/ansible)
+dependencies: null
+license: GPL-3.0-or-later
+license_file: COPYING
+tags:
+  - cloud
+  - collection
+repository: https://github.com/ansible-collections/cloud.FIXME.git
+homepage: https://github.com/ansible-collections/cloud.FIXME
+issues: https://github.com/ansible-collections/cloud.FIXME/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc
+
