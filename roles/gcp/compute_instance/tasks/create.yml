@@ -1,0 +1,63 @@
+---
+- name: Find an image
+  gcp_compute_image_info:
+    project: '{{ image_project }}'
+    auth_kind: '{{ gcp_cred_kind }}'
+    service_account_file: '{{ gcp_cred_file }}'
+    filters:
+    - '{{ compute_image_filters }}'
+  register: result
+
+- set_fact:
+    disk_source_image: '{{ result.resources|last }}'  ## Use the last/newest image
+
+- name: Create a disk
+  gcp_compute_disk:
+    name: '{{ disk_name }}'
+    project: '{{ gcp_project }}'
+    auth_kind: '{{ gcp_cred_kind }}'
+    service_account_file: '{{ gcp_cred_file }}'
+    size_gb: '{{ disk_size }}'
+    source_image: '{{ disk_source_image.selfLink }}'
+    zone: '{{ zone }}'
+    state: present
+  register: disk
+
+- name: Create a network
+  gcp_compute_network:
+    name: '{{ network_name }}'
+    project: '{{ gcp_project }}'
+    auth_kind: '{{ gcp_cred_kind }}'
+    service_account_file: '{{ gcp_cred_file }}'
+    state: present
+  register: network
+
+- name: Create an address
+  gcp_compute_address:
+    name: '{{ instance_address_name }}'
+    region: '{{ region }}'
+    project: '{{ gcp_project }}'
+    auth_kind: '{{ gcp_cred_kind }}'
+    service_account_file: '{{ gcp_cred_file }}'
+    state: present
+  register: address
+
+- name: Create an instance
+  gcp_compute_instance:
+    name: '{{ instance_name }}'
+    project: '{{ gcp_project }}'
+    auth_kind: '{{ gcp_cred_kind }}'
+    zone: '{{ zone }}'
+    service_account_file: '{{ gcp_cred_file }}'
+    machine_type: '{{ machine_type }}'
+    deletion_protection: '{{ deletion_protection }}'
+    disks:
+    - source: '{{ disk }}'
+      auto_delete: 'true'
+      boot: 'true'
+    network_interfaces:
+    - access_configs:
+      - type: ONE_TO_ONE_NAT  ## Currently, only one access config, ONE_TO_ONE_NAT, is supported by the module
+        name: External NAT
+      network: '{{ network }}'
+    state: present

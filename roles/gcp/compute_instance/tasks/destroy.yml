@@ -1,0 +1,19 @@
+- name: Ensure deletion protection is disabled
+  gcp_compute_instance:
+    name: '{{ instance_name }}'
+    project: '{{ gcp_project }}'
+    auth_kind: '{{ gcp_cred_kind }}'
+    zone: '{{ zone }}'
+    service_account_file: '{{ gcp_cred_file }}'
+    deletion_protection: "false"
+
+- name: Destroy instance
+  gcp_compute_instance:
+    name: '{{ instance_name }}'
+    project: '{{ gcp_project }}'
+    auth_kind: '{{ gcp_cred_kind }}'
+    zone: '{{ zone }}'
+    service_account_file: '{{ gcp_cred_file }}'
+    state: absent
+## Public IPs are not deleted; they're detached into the VPC pool. I probably want to release them?
+## The network also stays, which I def want to keep

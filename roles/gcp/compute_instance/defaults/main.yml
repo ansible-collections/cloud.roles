@@ -1,0 +1,20 @@
+---
+# defaults file for gcp_role
+gcp_cred_file: auth.json
+gcp_project: ansible-project
+image_project: centos-cloud  ## If using a public image, you need to use the project name for that image
+gcp_cred_kind: serviceaccount
+region: 'us-west1'
+zone: 'us-west1-a'
+
+compute_image_filters: name = centos-7*
+
+disk_name: ansible-disk
+disk_size: 20
+
+network_name: ansible-network
+instance_address_name: ansible-address
+
+machine_type: n1-standard-1
+deletion_protection: "true"
+instance_name: ansible-instance

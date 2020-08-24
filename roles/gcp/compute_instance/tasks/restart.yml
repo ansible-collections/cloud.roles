@@ -1,0 +1,26 @@
+# gcp_compute_instance doesn't have a restart directive, we have to stop/start
+- name: Halt an instance
+  gcp_compute_instance:
+    name: '{{ instance_name }}'
+    project: '{{ gcp_project }}'
+    auth_kind: '{{ gcp_cred_kind }}'
+    zone: '{{ zone }}'
+    service_account_file: '{{ gcp_cred_file }}'
+    status: TERMINATED  ## TERMINATED issues a compute.instances.stop request 
+  register: _instance_state
+  delay: 10
+  retries: 5
+  until: _instance_state.status == 'TERMINATED'
+
+- name: Start an instance
+  gcp_compute_instance:
+    name: '{{ instance_name }}'
+    project: '{{ gcp_project }}'
+    auth_kind: '{{ gcp_cred_kind }}'
+    zone: '{{ zone }}'
+    service_account_file: '{{ gcp_cred_file }}'
+    status: RUNNING
+  register: _instance_state
+  delay: 10
+  retries: 5
+  until: _instance_state.status == 'RUNNING'
