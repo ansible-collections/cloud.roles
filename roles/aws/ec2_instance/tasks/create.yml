@@ -1,0 +1,58 @@
+---
+- name: Find an image
+  ec2_ami_info:
+    owners: 'amazon'
+    filters:
+      name: '{{ ec2_ami_name }}'
+  register: result
+
+- set_fact:
+    ec2_ami_image: '{{ result.resources|last }}'  ## Use the last/newest image
+
+- name: "Create SSH Key on EC2"
+  ec2_key:
+    name: "{{ key_name }}"
+    key_material: "{{ key_material |default(omit) }}"
+  register: ec2_key
+
+- name: "Create VPC for use in testing"
+  ec2_vpc_net:
+    state: present
+    name: "{{ vpc_name }}"
+    cidr_block: "{{ vpc_cidr }}"
+    tenancy: default
+  register: ec2_vpc
+
+#- name: "Create default subnet"
+#  ec2_vpc_subnet:
+#    state: present
+#    vpc_id: "{{ ec2_vpc.vpc.id }}"
+#    cidr: "{{ subnet_cidr }}"
+#    az: "{{ subnet_az }}"
+#  register: vpc_subnet
+
+- name: "Create a security group"
+  ec2_group:
+    state: present
+    name: "{{ sg_name }}"
+    vpc_id: "{{ testing_vpc.vpc.id }}"
+    rules: "{{ ec2_group_rules }}"
+  register: ec2_security_group
+
+#- name: "Create ec2 instance"
+#  community.aws.ec2_instance:
+#    state: present
+#    name: "{{ ec2_instance_name }}"
+#    image_id: "{{ ec2_ami_image }}"
+#    vpc_subnet_id: "{{ vpc_subnet.subnet.id }}"
+
+- name: "Create ec2 instance"
+  ec2:
+    key_name: "{{ ec2_key.key.name }}"
+    instance_type: "{{ instance_type }}"
+    image: "{{ ec2_ami_image }}"
+    group: "{{ ec2_security_group.group_id }}"
+    count: "{{ num_instances }}"
+    vpc_subnet_id: "{{ vpc_subnet.subnet.id }}"
+    assign_public_ip: "{{ pub_ip_bool }}"
+
