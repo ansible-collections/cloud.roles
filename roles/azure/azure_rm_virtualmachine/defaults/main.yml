@@ -1,0 +1,17 @@
+---
+# defaults file for azure_rm_virtualmachine
+az_resource_group: "Ansible Resource Group"
+vm_name:
+az_admin_username: root
+# az_admin_pw: ''  # Not required if the os_type=Linux and SSH password authentication is disabled by setting ssh_password_enabled=false.
+
+vm_image:
+  offer: CentOS
+  publisher: OpenLogic
+  sku: '7.8'
+  version: latest
+
+# ssh_public_keys is only used with os_type=Linux
+#ssh_public_keys:
+#  - path: /home/adminUser/.ssh/authorized_keys
+#    key_data: ''

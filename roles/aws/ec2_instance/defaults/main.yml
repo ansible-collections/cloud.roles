@@ -1,0 +1,20 @@
+---
+# defaults file for ec2_instance
+ec2_ami_name: "amzn2-ami-hvm-2.*-x86_64-gp2"
+
+key_name: "Ansible SSH Key"
+# key_material: Provide your SSH public key, or omit this parameter to have a new one created for you
+
+vpc_name: "Ansible VPC"
+vpc_cidr: "10.10.0.0/24"
+
+sg_name: "Ansible Security Group"
+ec2_group_rules:
+  - proto: tcp
+    from_port: 22
+    to_port: 22
+    cidr_ip: "{{ vpc_cidr }}"
+
+instance_type: "t3.micro"
+num_instances: 1  # How many instances to create
+pub_ip_bool: True  # Whether or not to allocate a public Elastic IP address for the instance

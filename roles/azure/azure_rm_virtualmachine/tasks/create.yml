@@ -1,0 +1,10 @@
+---
+- name: Create VM with defaults
+  azure_rm_virtualmachine:
+    resource_group: '{{ az_resource_group }}'
+    name: '{{ vm_name }}'
+    admin_username: '{{ az_admin_username }}'
+    admin_password: '{{ az_admin_pw |default(omit) }}'
+    image: '{{ vm_image }}'
+    ssh_public_keys: '{{ ssh_public_keys |default(omit) }}'
+

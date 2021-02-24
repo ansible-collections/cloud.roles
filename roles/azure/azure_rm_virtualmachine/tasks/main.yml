@@ -1,0 +1,4 @@
+---
+# tasks file for azure_rm_virtualmachine
+- name: Manage Instance
+  include_tasks: '{{ instance_action }}'.yml
