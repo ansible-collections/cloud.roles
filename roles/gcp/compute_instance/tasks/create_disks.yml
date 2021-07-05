@@ -1,0 +1,66 @@
+---
+- name: Set name of node
+  set_fact:
+    node_name: "{{ item.name }}"
+
+- name: Set Zone for node {{ node_name }}
+  set_fact:
+    node_zone_name: "{{ item.zone }}"
+
+- name: Create a boot disk for {{ node_name }}
+  gcp_compute_disk:
+    project: '{{ gcp_project }}'
+    auth_kind: '{{ gcp_cred_kind }}'
+    service_account_file: '{{ gcp_cred_file }}'
+
+    name: '{{ disk.name }}'
+    size_gb: '{{ disk.size }}'
+    source_image: '{{ disk.image }}'
+    zone: '{{ node_zone_name }}'
+    state: present
+  loop: "{{ item.boot_disk }}"
+  loop_control:
+    loop_var: disk
+  register: bootdisk
+
+- name: Create a data disk for {{ node_name }}
+  gcp_compute_disk:
+    project: '{{ gcp_project }}'
+    auth_kind: '{{ gcp_cred_kind }}'
+    service_account_file: '{{ gcp_cred_file }}'
+
+    name: '{{ disk.name }}'
+    size_gb: '{{ disk.size }}'
+    zone: '{{ node_zone_name }}'
+    state: present
+  loop: "{{ item.additional_disks }}"
+  loop_control:
+    loop_var: disk
+  register: additional_disks
+
+- set_fact:
+    disk_other_data: "{{ disk_other_data | default({}) | combine({disk.name: disk.selfLink }) }}"
+  loop: "{{ bootdisk.results }}"
+  loop_control:
+    loop_var: disk
+
+- set_fact:
+    boot_disk_data: "{{ boot_disk_data | default([]) + [{'auto_delete': disk.auto_delete, 'boot': disk.boot, 'source': {'selfLink': disk_other_data[disk.name]}}] }}"
+  loop: "{{ item.boot_disk }}"
+  loop_control:
+    loop_var: disk
+
+- set_fact:
+    disk_other_data: "{{ disk_other_data | default({}) | combine({disk.name: disk.selfLink }) }}"
+  loop: "{{ additional_disks.results }}"
+  loop_control:
+    loop_var: disk
+
+- set_fact:
+    additional_disks_data: "{{ additional_disks_data | default([]) + [{'auto_delete': disk.auto_delete, 'boot': disk.boot, 'source': {'selfLink': disk_other_data[disk.name]}}] }}"
+  loop: "{{ item.additional_disks }}"
+  loop_control:
+    loop_var: disk
+
+- set_fact:
+    node_disk_data: "{{ node_disk_data | default({}) | combine({ node_name: boot_disk_data + additional_disks_data })}}"
