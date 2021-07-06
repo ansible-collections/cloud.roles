@@ -1,0 +1,33 @@
+---
+- name: Set name of node
+  set_fact:
+    node_name: "{{ item.name }}"
+
+- name: create a static-IP address for {{ node_name }}
+  gcp_compute_address:
+    project: "{{ gcp_project }}"
+    region: "{{ gcp_region }}"
+    auth_kind: "{{ gcp_cred_kind }}"
+    service_account_file: "{{ gcp_cred_file }}"
+
+    name: "{{ static_ip.nic_name }}"
+    state: present
+  loop: "{{ item.ips }}"
+  loop_control:
+    loop_var: static_ip
+  register: networks
+
+- set_fact:
+    network_other_data: "{{ network_other_data | default({}) | combine({network.name: network }) }}"
+  loop: "{{ networks.results }}"
+  loop_control:
+    loop_var: network
+
+- set_fact:
+    network_data: "{{ network_data | default([]) + [{'type': network.type, 'name': network.nic_name, 'nat_ip': network_other_data[network.nic_name] }] }}"
+  loop: "{{ item.ips }}"
+  loop_control:
+    loop_var: network
+
+- set_fact:
+    node_network_data: "{{ node_network_data | default({}) | combine({ node_name: network_data })}}"

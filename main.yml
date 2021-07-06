@@ -1,0 +1,11 @@
+---
+- hosts: localhost
+  gather_facts: no
+  collections:
+    - cloud.roles
+    - google.cloud
+  vars:
+    instance_action: create
+  roles:
+    - gcp.compute_instance
+

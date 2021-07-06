@@ -1,20 +1,47 @@
 ---
-# defaults file for gcp_role
-gcp_cred_file: auth.json
-gcp_project: ansible-project
-image_project: centos-cloud  ## If using a public image, you need to use the project name for that image
-gcp_cred_kind: serviceaccount
-region: 'us-west1'
-zone: 'us-west1-a'
+## defaults file for compute_instance
 
+## GCP Project
+gcp_project: cloud-role
+gcp_region: asia-south2
+gcp_cred_file: ~/auth.json
+gcp_cred_kind: serviceaccount
+
+## If using a public image, you need to use the project name for that image
+image_project: centos-cloud
+
+## Example of Compute Image Filters
 compute_image_filters: name = centos-7*
 
-disk_name: ansible-disk
-disk_size: 20
-
-network_name: ansible-network
-instance_address_name: ansible-address
-
-machine_type: n1-standard-1
-deletion_protection: "true"
-instance_name: ansible-instance
+## A list of nodes to manage
+nodes:
+  - name: standalone-node    # Name of instance
+    # Zone name
+    zone: asia-south2-c
+    # Machine Type
+    machine_type: e2-micro
+    # A list of NICs for creating static IPs
+    ips:
+      ## Currently, only one access config, ONE_TO_ONE_NAT, is supported by the Google APIs
+      - nic_name: ip-01
+        type: ONE_TO_ONE_NAT
+        name: External NAT
+    # Delete protection flag
+    deletion_protection: false
+    # A list of Boot disk - Required for state=present
+    boot_disk:
+      - name: boot-disk-01    # Name of the boot disk
+        size: 20    # Size in GB
+        image: projects/centos-cloud/global/images/centos-7-v20210701    # Image name
+        auto_delete: true    # Auto Delete
+        boot: true    # Boot
+    # A list of Additional disks
+    additional_disks:
+      - name: data-disk-01    # Name of the additional disk
+        size: 1    # Size in GB
+        auto_delete: false    # Auto Delete
+        boot: false    # Boot
+      - name: "log-disk-01"    # Name of the additional disk
+        size: 1
+        auto_delete: false    # Auto Delete
+        boot: false    # Boot
