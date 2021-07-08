@@ -1,0 +1,76 @@
+---
+- assert:
+    that:
+      - azure_virtual_network.name is defined
+      - azure_virtual_network.subnet is defined
+      - azure_virtual_network.subnet.name is defined
+    fail_msg: "Virtual network definition is incomplete"
+
+# Create virtual network
+- name: Describe virtual network
+  azure_rm_virtualnetwork_info:
+    resource_group: '{{ azure_resource_group }}'
+    name: '{{ azure_virtual_network.name }}'
+  register: result
+
+- name: Create virtual network
+  block:
+  - assert:
+      that:
+        - azure_virtual_network.address_prefix is defined
+      fail_msg: "azure_virtual_network.address_prefix should be defined to create the virtual network"
+
+  - name: Create virtual network
+    azure_rm_virtualnetwork:
+      resource_group: "{{ azure_resource_group }}"
+      name: "{{ azure_virtual_network.name }}"
+      address_prefixes: "{{ azure_virtual_network.address_prefix }}"
+
+  when:
+    - result.virtualnetworks == []
+
+# Create subnet from virtual network
+- name: Get subnet information
+  azure_rm_subnet_info:
+    resource_group: '{{ azure_resource_group }}'
+    virtual_network_name: '{{ azure_virtual_network.name }}'
+    name: '{{ azure_virtual_network.subnet.name }}'
+  register: result_subnet
+
+- name: Create subnet into virtual network
+  block:
+  - assert:
+      that:
+        - azure_virtual_network.subnet.address_prefix is defined
+      fail_msg: "azure_virtual_network.subnet.address_prefix is required to create the subnet"
+
+  - name: Create subnet
+    azure_rm_subnet:
+      resource_group: "{{ azure_resource_group }}"
+      name: "{{ azure_virtual_network.subnet.name }}"
+      address_prefix: "{{ azure_virtual_network.subnet.address_prefix }}"
+      virtual_network: "{{ azure_virtual_network.name }}"
+  when:
+    - result_subnet.subnets == []
+
+# assign public address
+- name: Create pulic ip address
+  block:
+  - set_fact:
+      azure_public_ip_name: "azure-{{ azure_resource_group | hash('md5') | truncate(7, True, '') }}{{ 1000 | random }}"
+
+  - name: Create public ip
+    azure_rm_publicipaddress:
+      resource_group: "{{ azure_resource_group }}"
+      allocation_method: Static
+      name: "{{ azure_public_ip_name }}"
+  when: 
+    - azure_public_ip_address
+
+# create security group
+- name: Create security group
+  azure_rm_securitygroup:
+    resource_group: "{{ azure_resource_group }}"
+    name: "{{ azure_security_group_name }}"
+  when:
+    - azure_security_group_name is defined

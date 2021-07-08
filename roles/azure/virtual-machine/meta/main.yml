@@ -1,0 +1,12 @@
+galaxy_info:
+  author: Aubin Bikouo (@abikouo)
+  description: Manage Azure virtual machine(s)
+
+  license: GPL-3.0-or-later
+
+  galaxy_tags:
+    - azure
+    - virtual-machine
+
+collections:
+  - azure.azcollection
