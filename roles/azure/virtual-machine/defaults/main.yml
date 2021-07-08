@@ -1,0 +1,15 @@
+---
+# defaults file for virtual-machine
+azure_vms:
+  - name: 'az-test-vm-{{ 1000 | random }}'
+
+azure_virtual_network:
+  name: 'az-ansible-vnet-{{ 1000 | random }}'
+  address_prefix: "10.10.0.0/16"
+  subnet:
+    name: 'az-ansible-subnet-{{ 1000 | random }}'
+    address_prefix: "10.10.0.0/24"
+
+azure_resource_group: "{{ resource_group | default('az-ansible-rg') }}"
+
+azure_public_ip_address: False

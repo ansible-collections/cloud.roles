@@ -1,0 +1,7 @@
+---
+- name: assert that nodes has been defined with the appropriate type
+  assert:
+    that:
+      - azure_vms is defined
+      - azure_vms is list
+    fail_msg: "azure_vms variable is missing, or is not defined as expected (list)."

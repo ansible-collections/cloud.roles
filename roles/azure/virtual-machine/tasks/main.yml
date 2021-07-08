@@ -1,0 +1,5 @@
+---
+# tasks file for virtual-machine
+# - include_tasks: validate_vars.yml
+
+- include_tasks: create_network.yml
